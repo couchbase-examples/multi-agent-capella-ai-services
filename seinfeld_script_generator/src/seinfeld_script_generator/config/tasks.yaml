@@ -1,0 +1,143 @@
+# Seinfeld Script Generator - Task Definitions
+# Each task contributes to creating an authentic Seinfeld episode script
+
+analyze_theme:
+  description: >
+    Analyze the user's theme: "{theme}"
+
+    Your task is to:
+    1. Use the Couchbase search tool to find similar Seinfeld episodes and dialogues related to this theme
+    2. Break down the theme into comedic elements that fit the Seinfeld universe
+    3. Identify what each main character (Jerry, George, Elaine, Kramer) would find funny, 
+       annoying, or obsession-worthy about this theme
+    4. Find the "nothing" in the theme - what mundane detail can be blown out of proportion?
+    5. Identify potential sources of conflict and misunderstanding
+
+    Use the retrieved examples to understand how similar themes were handled in the actual show.
+  expected_output: >
+    A detailed theme analysis document containing:
+    - Theme breakdown with 3-5 comedic angles
+    - Character-specific reactions (what would bother George? What would Jerry observe?)
+    - Potential misunderstandings that could drive plot
+    - Retrieved example dialogues that inform the approach
+    - The core "Seinfeld observation" that makes this theme work
+  agent: theme_analyzer
+
+design_plot_structure:
+  description: >
+    Based on the theme analysis, design the episode's plot structure.
+
+    Your task is to:
+    1. Create an A-plot (main storyline, usually involving Jerry or multiple characters)
+    2. Create a B-plot (secondary storyline, often George or Elaine focused)
+    3. Create a C-plot (tertiary storyline, often Kramer's scheme or adventure)
+    4. Design the convergence points where these plots intersect
+    5. Plan the cold open, act breaks, and finale
+    6. Use the Couchbase tool to find similar plot structures from actual episodes
+
+    Remember: The best Seinfeld episodes have plots that seem unrelated but cleverly 
+    connect by the end, often with ironic or unexpected consequences.
+  expected_output: >
+    A complete episode plot structure containing:
+    - Cold Open scene concept (2 minutes)
+    - A-Plot summary with 4-5 key beats
+    - B-Plot summary with 3-4 key beats  
+    - C-Plot summary with 2-3 key beats
+    - 3 convergence points where plots intersect
+    - Finale concept showing how all threads resolve
+    - List of locations (apartment, coffee shop, etc.)
+    - Supporting characters needed
+  agent: plot_architect
+  context:
+    - analyze_theme
+
+develop_character_voices:
+  description: >
+    Prepare character voice guides for this specific episode.
+
+    Your task is to:
+    1. Use the Couchbase tool to retrieve characteristic dialogue examples for each character
+    2. Define how each main character would react to their storyline
+    3. Identify specific phrases, mannerisms, and speech patterns to use
+    4. Plan any running gags or repeated phrases for this episode
+    5. Determine relationships and dynamics between characters for this story
+
+    Use the retrieved dialogues to ensure voices match the original show's style.
+  expected_output: >
+    A character voice guide containing:
+    - Jerry: Key observations, sarcastic lines, and typical reactions for this episode
+    - George: Neurotic concerns, paranoid interpretations, and complaint patterns
+    - Elaine: Confident statements, exasperated reactions, and relationship dynamics
+    - Kramer: Eccentric ideas, physical comedy moments, and enthusiastic declarations
+    - Supporting characters: Voice notes for any recurring or new characters
+    - Episode-specific catchphrases or running gags
+    - Sample dialogue snippets in each character's voice
+  agent: character_voice_specialist
+  context:
+    - analyze_theme
+    - design_plot_structure
+
+write_script_scenes:
+  description: >
+    Write the complete episode script scene by scene.
+
+    Your task is to:
+    1. Write each scene with proper formatting (location header, stage directions, dialogue)
+    2. Use the Couchbase tool to retrieve similar scenes as style references
+    3. Ensure each line sounds authentic to the character speaking it
+    4. Include physical comedy cues and timing notes in stage directions
+    5. Build comedy through escalation, callbacks, and payoffs
+    6. Connect the plot threads at appropriate moments
+
+    Format the script in standard TV screenplay format:
+    - Scene headers: INT. JERRY'S APARTMENT - DAY
+    - Character names centered above dialogue
+    - Stage directions in parentheses
+    - Action lines describing physical comedy
+  expected_output: >
+    A complete Seinfeld episode script (approximately 22 minutes runtime) containing:
+    - Cold Open (1-2 pages)
+    - Act One: 4-5 scenes establishing all plot threads (8-10 pages)
+    - Act Two: 5-6 scenes escalating conflicts and intersecting plots (10-12 pages)
+    - Finale: 2-3 scenes resolving all threads with callbacks (3-4 pages)
+    - Tag scene (optional short comedic button)
+
+    Each scene should include:
+    - Proper scene header with location and time
+    - Natural dialogue with comedic rhythm
+    - Stage directions for physical comedy
+    - Callbacks to earlier jokes
+  agent: dialogue_writer
+  context:
+    - analyze_theme
+    - design_plot_structure
+    - develop_character_voices
+
+review_and_polish:
+  description: >
+    Review the complete script for quality, authenticity, and comedic effectiveness.
+
+    Your task is to:
+    1. Verify each character sounds authentic (compare against retrieved examples)
+    2. Check that all plot threads connect and resolve
+    3. Ensure callbacks and running gags land properly
+    4. Verify the humor is observational (Seinfeld style) not broad/slapstick
+    5. Check pacing and scene length
+    6. Polish dialogue for maximum comedic impact
+    7. Add any missing stage directions or timing cues
+
+    Use the Couchbase tool to compare generated dialogue against actual show examples.
+  expected_output: >
+    The final polished Seinfeld episode script with:
+    - A creative episode title in Seinfeld style (e.g., "The [Noun]")
+    - Any dialogue improvements for authenticity
+    - Enhanced stage directions
+    - Verified plot coherence
+    - Quality rating (1-10) for overall "Seinfeldness"
+    - Brief notes on what makes this script work
+  agent: quality_reviewer
+  context:
+    - analyze_theme
+    - design_plot_structure
+    - develop_character_voices
+    - write_script_scenes
