@@ -168,7 +168,17 @@ multi-agent-capella-ai-services/
 │       └── tools/
 │           ├── __init__.py
 │           └── couchbase_rag.py  # Couchbase RAG tool
+├── tests/                      # Offline unit tests (no Couchbase needed)
 └── output/                     # Generated scripts
+```
+
+## Running Tests
+
+The unit tests inject a fake vector store into `SeinfeldRAGTool`, so they run without Couchbase or Capella AI credentials:
+
+```bash
+pip install -e . pytest
+pytest
 ```
 
 ## Couchbase Setup

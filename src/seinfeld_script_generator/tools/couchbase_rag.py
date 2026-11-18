@@ -2,9 +2,10 @@
 
 import os
 from datetime import timedelta
-from typing import Any, Optional, Type
+from typing import Any, Type
 
 from crewai.tools import BaseTool
+from langchain_core.documents import Document
 from langchain_couchbase.vectorstores import DistanceStrategy
 from pydantic import BaseModel, Field
 from langchain_openai import OpenAIEmbeddings
@@ -52,14 +53,21 @@ class SeinfeldRAGTool(BaseTool):
     _bucket: Any = None
     _scope: Any = None
     _collection: Any = None
-    _openai_client: Any = None
     _embeddings: Any = None
     _vector_store: Any = None
 
-    def __init__(self, **kwargs):
-        """Initialize the Seinfeld RAG Tool."""
+    def __init__(self, vector_store: Any = None, **kwargs):
+        """Initialize the Seinfeld RAG Tool.
+
+        Args:
+            vector_store: Optional LangChain vector store to search. When omitted, a
+                CouchbaseQueryVectorStore is built from environment variables.
+        """
         super().__init__(**kwargs)
-        self._initialize_connections()
+        if vector_store is not None:
+            self._vector_store = vector_store
+        else:
+            self._initialize_connections()
 
     def _initialize_connections(self):
         """Initialize Couchbase and OpenAI connections."""
@@ -67,7 +75,6 @@ class SeinfeldRAGTool(BaseTool):
             from couchbase.auth import PasswordAuthenticator
             from couchbase.cluster import Cluster
             from couchbase.options import ClusterOptions
-            from openai import OpenAI
 
             # Get connection settings from environment
             connection_string = os.getenv("CB_CONNECTION_STRING")
@@ -109,10 +116,12 @@ class SeinfeldRAGTool(BaseTool):
             print(f"Warning: Could not initialize Couchbase connection: {e}")
             print("The tool will operate in demo mode with sample responses.")
 
-    def _vector_search(self, query: str, num_results: int, character: Optional[str] = None) -> list[dict]:
+    def _vector_search(self, query: str, num_results: int) -> list[Document]:
         """Perform vector search in Couchbase."""
         try:
-            results = self._vector_store.similarity_search(query, k=num_results, fields=["Character", "EpisodeNo", "Season"])
+            results = self._vector_store.similarity_search(
+                query, k=num_results, fields=["Character", "EpisodeNo", "Season"]
+            )
             return results
 
         except Exception as e:
@@ -130,8 +139,8 @@ class SeinfeldRAGTool(BaseTool):
         Returns:
             Formatted string containing relevant Seinfeld dialogue examples
         """
-        # Check if connections are initialized
-        if self._cluster is None or self._openai_client is None:
+        # Fall back to demo mode when the vector store could not be initialized
+        if self._vector_store is None:
             return self._get_demo_response(query)
 
         # Perform vector search
@@ -144,7 +153,7 @@ class SeinfeldRAGTool(BaseTool):
         formatted_results = self._format_results(results, query)
         return formatted_results
 
-    def _format_results(self, results: list[dict], query: str) -> str:
+    def _format_results(self, results: list[Document], query: str) -> str:
         """Format search results into a readable string."""
         output = f"## Seinfeld Script Search Results\n"
         output += f"**Query:** {query}\n"
@@ -153,21 +162,22 @@ class SeinfeldRAGTool(BaseTool):
         for i, result in enumerate(results, 1):
             output += f"### Example {i}\n"
 
-            # Add metadata if available
-            metadata = result.get("metadata", {})
-            if metadata:
-                if "title" in metadata:
-                    output += f"**Episode:** {metadata['title']}\n"
-                if "description" in metadata:
-                    output += f"**Context:** {metadata['description']}\n"
+            # Add metadata if available (fields requested in _vector_search)
+            metadata = result.metadata or {}
+            if "Character" in metadata:
+                output += f"**Character:** {metadata['Character']}\n"
+            if "Season" in metadata or "EpisodeNo" in metadata:
+                output += (
+                    f"**Episode:** Season {metadata.get('Season', '?')}, "
+                    f"Episode {metadata.get('EpisodeNo', '?')}\n"
+                )
 
             # Add the actual dialogue/text
-            text = result.get("text", "")
+            text = result.page_content or ""
             if text:
                 output += f"**Dialogue:**\n```\n{text[:1000]}{'...' if len(text) > 1000 else ''}\n```\n"
 
-            output += f"**Relevance Score:** {result.get('score', 'N/A')}\n\n"
-            output += "---\n\n"
+            output += "\n---\n\n"
 
         return output
 
