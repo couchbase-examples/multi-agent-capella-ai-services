@@ -52,7 +52,7 @@ This project uses 5 specialized AI agents working together to create Seinfeld sc
 
 ## Prerequisites
 
-- Python 3.10+
+- Python 3.11+
 - Couchbase Capella cluster running Couchbase 8.0
 - Couchbase Capella AI Services including hosting an Embedding and a Large Language Model
 
